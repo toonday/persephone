@@ -1,12 +1,12 @@
 from setuptools import setup
 
-setup(name='persephone',
-      version='0.4.2',
+setup(name='persephone_toonday',
+      version='0.4.2.1',
       description='A tool for developing automatic phoneme transcription models',
       long_description=open('README.rst', encoding="utf8").read(),
-      url='https://github.com/oadams/persephone',
-      author='Oliver Adams',
-      author_email='oliver.adams@gmail.com',
+      url='https://github.com/toonday/persephone',
+      author='Tunde Oladimeji',
+      author_email='oladimejitunde@gmail.com',
       license='Apache2.0',
       packages=['persephone', 'persephone.datasets', 'persephone.preprocess'],
       classifiers = [

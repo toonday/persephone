@@ -91,9 +91,11 @@ def train_ready(corpus, directory=EXP_DIR):
     model.train(min_epochs=20, early_stopping_steps=3)
     return exp_dir
 
-def transcribe(model_path, corpus):
+def transcribe(model_path, corpus, write_to_file=True):
     """ Applies a trained model to untranscribed data in a Corpus. """
 
     exp_dir = prep_exp_dir()
     model = get_simple_model(exp_dir, corpus)
-    model.transcribe(model_path)
+    return_str = model.transcribe(model_path, write_to_file=write_to_file)
+
+    return return_str

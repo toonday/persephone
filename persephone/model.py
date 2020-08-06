@@ -190,7 +190,7 @@ class Model:
         self.dense_ref = None
         self.saved_model_path = "" # type: str
 
-    def transcribe(self, restore_model_path: Optional[str]=None) -> None:
+    def transcribe(self, restore_model_path: Optional[str]=None, write_to_file: Optional[bool]=True) -> str:
         """ Transcribes an untranscribed dataset. Similar to eval() except
         no reference translation is assumed, thus no LER is calculated.
         """
@@ -225,13 +225,21 @@ class Model:
 
                 hyp_batches.append((hyps,feat_fn_batch))
 
-            with open(os.path.join(hyps_dir, "hyps.txt"), "w",
-                      encoding=ENCODING) as hyps_f:
+            return_str = ""
+            if write_to_file:
+              with open(os.path.join(hyps_dir, "hyps.txt"), "w",
+                        encoding=ENCODING) as hyps_f:
+                  for hyp_batch, fn_batch in hyp_batches:
+                      for hyp, fn in zip(hyp_batch, fn_batch):
+                          print(fn, file=hyps_f)
+                          print(" ".join(hyp), file=hyps_f)
+                          print("", file=hyps_f)
+            else:
                 for hyp_batch, fn_batch in hyp_batches:
                     for hyp, fn in zip(hyp_batch, fn_batch):
-                        print(fn, file=hyps_f)
-                        print(" ".join(hyp), file=hyps_f)
-                        print("", file=hyps_f)
+                        return_str = " ".join(hyp)
+
+        return return_str
 
     def decode(self):
         model_path_prefix = Path(self.exp_dir) / "model" / "model_best.ckpt"

@@ -46,7 +46,7 @@ FFMPEG_PATH = config_file.get("PATHS", "FFMPEG_PATH", fallback="ffmpeg")
 KALDI_ROOT = config_file.get("PATHS", "KALDI_ROOT_PATH", fallback="/home/oadams/tools/kaldi")
 
 # Fetch the path of the logging.ini file installed by setuptools.
-logging_ini_path = resource_filename(Requirement.parse("persephone"), "persephone/logging.ini")
+logging_ini_path = resource_filename(Requirement.parse("persephone-toonday"), "persephone/logging.ini")
 
 LOGGING_INI_PATH = config_file.get("PATHS", "log_ini_path", fallback=logging_ini_path)
 

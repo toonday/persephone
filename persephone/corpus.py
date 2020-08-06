@@ -170,6 +170,9 @@ class Corpus:
         #: An arbitrary string representing the transcription tokenization
         #: used (eg. "phonemes", "tones", "joint", or "characters").
         self.label_type = label_type
+        self.inference_only = False
+        if not self.label_type:
+          self.inference_only = True
 
         # Setting up directories
         # Set the directory names
@@ -184,7 +187,7 @@ class Corpus:
         if labels is not None:
             self.labels = labels
             found_labels = determine_labels(self.tgt_dir, label_type)
-            if found_labels != self.labels:
+            if found_labels != self.labels and not self.inference_only:
                 raise LabelMismatchException("User specified labels, {}, do"
                     " not match those automatically found, {}.".format(labels,
                     found_labels))
@@ -203,24 +206,26 @@ class Corpus:
         self.train_prefixes = [] # type: List[str]
         self.valid_prefixes = [] # type: List[str]
         self.test_prefixes = [] # type: List[str]
-        # This is also lazy if the {train,valid,test}_prefixes.txt files exist.
-        self.make_data_splits(max_samples=max_samples)
 
-        # Sort the training prefixes by size for more efficient training
-        logger.debug("Training prefixes")
-        self.train_prefixes = utils.sort_by_size(
-            self.feat_dir, self.train_prefixes, feat_type)
+        if not self.inference_only:
+          # This is also lazy if the {train,valid,test}_prefixes.txt files exist.
+          self.make_data_splits(max_samples=max_samples)
 
-        # Ensure no overlap between training and test sets
-        try:
-            ensure_no_set_overlap(
-                self.get_train_fns()[0],
-                self.get_valid_fns()[0],
-                self.get_test_fns()[0]
-            )
-        except PersephoneException:
-            logger.error("Got overlap between train, valid and test data sets")
-            raise
+          # Sort the training prefixes by size for more efficient training
+          logger.debug("Training prefixes")
+          self.train_prefixes = utils.sort_by_size(
+              self.feat_dir, self.train_prefixes, feat_type)
+
+          # Ensure no overlap between training and test sets
+          try:
+              ensure_no_set_overlap(
+                  self.get_train_fns()[0],
+                  self.get_valid_fns()[0],
+                  self.get_test_fns()[0]
+              )
+          except PersephoneException:
+              logger.error("Got overlap between train, valid and test data sets")
+              raise
 
         untranscribed_from_file = self.get_untranscribed_prefixes()
         untranscribed_found = find_untranscribed_wavs(self.get_wav_dir(), self.get_label_dir(), self.label_type)
@@ -511,7 +516,10 @@ class Corpus:
     def num_feats(self):
         """ The number of features per time step in the corpus. """
         if not self._num_feats:
-            filename = self.get_train_fns()[0][0]
+            if self.inference_only:
+              filename = self.get_untranscribed_fns()[0]
+            else:
+              filename = self.get_train_fns()[0][0]
             feats = np.load(filename)
             # pylint: disable=maybe-no-member
             if len(feats.shape) == 3:
